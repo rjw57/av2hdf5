@@ -18,14 +18,34 @@ Video decoding options:
 Encoding options:
     --jpeg                  Write output as a JPEG-encoded byte stream.
     --png                   Write output as a PNG-encoded byte stream.
-    --raw                   Write output as raw 8-bit pixel values. (The default.)
+    --raw                   Write output as raw 8-bit pixel values. (default)
 
 The <video> argument specifies a file containing a FFMPEG-compatible video file
 to extract frames from. The <output> argument specifies a HDF5 file to write
 output to. If <output> already exists, it will be overwritten.
 
+The HDF5 file will be created with a number of datasets under the root node.
+Each dataset will have the following attributes:
+
+    * original_idx: the 0-based index into the orinal file of this frame
+    * content_id: a unique ID string for the frame based on its content
+    * encoded_id: a unique ID string for the frame based on its encoding
+    * encoding: one of 'raw', 'jpeg', 'png' specifying the encoding
+
+If encoding is 'raw' then the frame is stored as an uncompressed NxMx3 array.
+For other encodings, the frame is stored as a one-dimensional array of bytes
+representing the encoded frame.
+
+The content_id attribute is independent of the encoding used for the frame and
+represents a unique id for the *content* of the frame independent of encoding
+artefacts. The encoding_id represents a unique id for a particular encoding of
+the frame. Corresponding frames in a HDF5 file using the jpeg, raw and png
+encodings will have identical content_id attributes but distinct encoded_id
+attributes.
+
 """
 import enum
+import hashlib
 import io
 import logging
 import sys
@@ -91,9 +111,17 @@ def convert(frames, output, encoding=Encoding.raw):
         if frame_idx > 0 and frame_idx % 100 == 0:
             LOG.info('Read frame {0}'.format(frame_idx))
 
+        # Convert frame to numpy array
+        frame_array = np.asarray(frame).astype(np.uint8)
+
+        # Hash data to give frame "id"
+        hashfunc = hashlib.sha1()
+        hashfunc.update(frame_array.tobytes())
+        frame_id = hashfunc.hexdigest()
+
         if encoding is Encoding.raw:
-            # Convert frame to numpy array
-            frame_array = np.asarray(frame).astype(np.uint8)
+            # Leave as is
+            pass
         elif encoding is Encoding.jpeg:
             fp = io.BytesIO()
             frame.save(fp, format='jpeg', quality=100)
@@ -110,9 +138,16 @@ def convert(frames, output, encoding=Encoding.raw):
             '/', 'frame{0:05d}'.format(frame_idx), frame_array
         )
 
+        # Hash encoded data to give encoded if
+        hashfunc = hashlib.sha1()
+        hashfunc.update(frame_array.tobytes())
+        frame_enc_id = hashfunc.hexdigest()
+
         # Write metadata on frame
         frame_ds.attrs.original_idx = frame_idx
         frame_ds.attrs.encoding = encoding.value
+        frame_ds.attrs.content_id = frame_id
+        frame_ds.attrs.encoded_id = frame_enc_id
 
 def read_video(fn, start_frame=None, duration=None):
     """Takes a path to a video file. Return a generator which will generator a
