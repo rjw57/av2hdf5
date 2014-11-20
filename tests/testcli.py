@@ -35,7 +35,7 @@ def test_no_flags():
 
 def test_simple_usage():
     """Test basic invocation of the CLI with a sample video clip"""
-    video_fn = datafile_path('event-01-view-01.mp4')
+    video_fn = datafile_path('event-01-view-01-short.mp4')
     with TempDir() as tmp_d:
         out_fn = os.path.join(tmp_d, 'output.h5')
         argv = ['av2hdf5', video_fn, out_fn]
