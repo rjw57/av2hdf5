@@ -11,7 +11,7 @@ install:
     - "wget http://ffmpeg.org/releases/ffmpeg-1.2.2.tar.bz2"
     - "tar -xjf ffmpeg-1.2.2.tar.bz2"
     - "cd ffmpeg-1.2.2"
-    - "./configure --disable-static --enable-shared --disable-doc"
+    - "./configure --disable-static --enable-shared --disable-doc --prefix=/usr"
     - "make && sudo make install"
     - "cd .."
 
