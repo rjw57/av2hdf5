@@ -3,7 +3,7 @@ Extract frames from video into HDF5 formatted files.
 
 Usage:
     av2hdf5 (-h | --help)
-    av2hdf5 [options] [--start=FRAME] [--duration=COUNT] <video> <output>
+    av2hdf5 [options] [--jpeg] [--start=FRAME] [--duration=COUNT] <video> <output>
 
 General options:
     -h, --help              Show a brief usage summary.
@@ -13,12 +13,17 @@ Video decoding options:
     -s, --start=FRAME       Start decoding from 0-indexed frame index FRAME.
     -t, --duration=COUNT    Decode only COUNT frames from the input.
 
+Encoding options:
+    --jpeg                  Write output as an encoded JPEG-format byte stream
+                            instead of raw data.
+
 The <video> argument specifies a file containing a FFMPEG-compatible video file
 to extract frames from. The <output> argument specifies a HDF5 file to write
 output to. If <output> already exists, it will be overwritten.
 
 """
 import logging
+import enum
 import sys
 
 import av
@@ -27,6 +32,10 @@ import tables
 import numpy as np
 
 LOG = logging.getLogger()
+
+class Encoding(Enum):
+    raw = 1
+    jpeg = 2
 
 def main():
     """Main entry point for tool."""
@@ -47,8 +56,13 @@ def main():
     LOG.info('Opening HDF5 output: {0}'.format(opts['<output>']))
     output = tables.open_file(opts['<output>'], 'w')
 
+    if opts['--jpeg']:
+        encoding = Encoding.jpeg
+    else:
+        encoding = Encoding.raw
+
     # Perform conversion
-    convert(frames, output)
+    convert(frames, output, encoding=encoding)
 
 def int_or_default(v, default=None):
     """Return v as an integer or return *default* is *v* is None."""
@@ -56,7 +70,7 @@ def int_or_default(v, default=None):
         return default
     return int(v)
 
-def convert(frames, output):
+def convert(frames, output, encoding=Encoding.raw):
     """Perform the actual extraction of video frames.
 
     *frames* is an iterable which yields frame index, PIL image pairs for each
@@ -69,13 +83,16 @@ def convert(frames, output):
         if frame_idx > 0 and frame_idx % 100 == 0:
             LOG.info('Read frame {0}'.format(frame_idx))
 
-        # Convert frame to numpy array
-        frame_array = np.asarray(frame).astype(np.uint8)
+        if encoding is Encoding.raw:
+            # Convert frame to numpy array
+            frame_array = np.asarray(frame).astype(np.uint8)
 
-        # Create dataset in output
-        frame_ds = output.create_array(
-            '/', 'frame{0:05d}'.format(frame_idx), frame_array
-        )
+            # Create dataset in output
+            frame_ds = output.create_array(
+                '/', 'frame{0:05d}'.format(frame_idx), frame_array
+            )
+        else:
+            assert False
 
         # Write metadata on frame
         frame_ds.attrs.original_idx = frame_idx
