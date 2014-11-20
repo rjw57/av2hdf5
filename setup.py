@@ -2,11 +2,11 @@ from setuptools import setup
 
 setup(
     name='av2hdf5',
-    version='0.1.0',
-    description='Convert video files to HDF5',
-    long_description='',
+    version='1.0',
+    description='Extract video frames into an HDF5 file',
+    long_description=open('README.rst').read(),
     author='Rich Wareham',
-    author_email='rjw57@cam.ac.uk',
+    author_email='rich.av2hdf5@richwareham.com',
     url='https://github.com/rjw57/av2hdf5',
     packages=[
         'av2hdf5',
@@ -22,7 +22,7 @@ setup(
         'tables',
     ],
     license="BSD",
-    zip_safe=False,
+    zip_safe=True,
     entry_points={
         'console_scripts': [
             'av2hdf5 = av2hdf5:main',
