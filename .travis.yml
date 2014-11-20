@@ -3,6 +3,8 @@ python:
     - "2.7"
     - "3.3"
 install:
+    - "sudo add-apt-repository -y ppa:jon-severinsson/ffmpeg"
+    - "sudo apt-get update"
     - "sudo apt-get -y install libavcodec-dev libavfilter-dev libavformat-dev libavdevice-dev libswscale-dev libavresample-dev"
     - "pip install -r requirements.txt"
     - "pip install -r tests/requirements.txt"
