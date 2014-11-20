@@ -4,12 +4,22 @@ python:
     - "2.7"
     - "3.3"
 install:
-    - "sudo add-apt-repository -y ppa:jon-severinsson/ffmpeg"
-    - "sudo apt-get update"
-    - "sudo apt-get -y install libavutil-dev libavcodec-dev libavfilter-dev"
-    - "sudo apt-get -y install libavformat-dev libavdevice-dev libswscale-dev"
-    - "sudo apt-get -y install libswresample-dev libhdf5-serial-dev"
+    # Distro packages which we need
+    - "sudo apt-get -y install libhdf5-serial-dev"
+
+    # FFMPEG from source(!)
+    - "wget http://ffmpeg.org/releases/ffmpeg-1.2.2.tar.bz2"
+    - "tar -xjf ffmpeg-1.2.2.tar.bz2"
+    - "cd ffmpeg-1.2.2"
+    - "./configure --disable-static --enable-shared --disable-doc"
+    - "make && sudo make install"
+    - "cd .."
+
+    # Install cython and numexpr explicitly since tables has a *build time*
+    # dependency on it.
     - "pip install cython numexpr"
+
+    # Now install ourselves and the test requirements
     - "pip install -r requirements.txt"
     - "pip install -r tests/requirements.txt"
 script:
