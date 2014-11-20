@@ -5,7 +5,7 @@ python:
     - "3.3"
 install:
     # Distro packages which we need
-    - "sudo apt-get -y install libhdf5-serial-dev"
+    - "sudo apt-get -y install libhdf5-serial-dev yasm"
 
     # FFMPEG from source(!)
     - "wget http://ffmpeg.org/releases/ffmpeg-1.2.2.tar.bz2"
