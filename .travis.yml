@@ -1,4 +1,6 @@
-language: python
+language:
+    - python
+    - cpp # For building python extensions
 python:
     - "2.7"
     - "3.3"
