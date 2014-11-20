@@ -1,9 +1,7 @@
 # PyTables requires the following to be installed
 numpy
 numexpr
-
-# Now PyTables
-tables
+cython
 
 # And, finally, anything else in setup.py
 -e .
