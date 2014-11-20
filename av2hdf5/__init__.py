@@ -3,8 +3,7 @@ Extract frames from video into HDF5 formatted files.
 
 Usage:
     av2hdf5 (-h | --help)
-    av2hdf5 [options]
-        [--start=FRAME] [--duration=COUNT]
+    av2hdf5 [options] [--start=FRAME] [--duration=COUNT]
         [--jpeg | --png | --raw] <video> <output>
 
 General options:
