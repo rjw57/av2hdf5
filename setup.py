@@ -1,14 +1,9 @@
-#!/usr/bin/env python
-
-import os
-import sys
-
 from setuptools import setup
 
 setup(
     name='av2hdf5',
     version='0.1.0',
-    description='Convert video files to (compressed) HDF5',
+    description='Convert video files to HDF5',
     long_description='',
     author='Rich Wareham',
     author_email='rjw57@cam.ac.uk',
@@ -21,6 +16,7 @@ setup(
     install_requires=[
         'av',
         'docopt',
+        'numpy',
         'tables',
     ],
     license="BSD",
