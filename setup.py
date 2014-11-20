@@ -17,6 +17,7 @@ setup(
         'av',
         'docopt',
         'numpy',
+        'pillow',
         'tables',
     ],
     license="BSD",
