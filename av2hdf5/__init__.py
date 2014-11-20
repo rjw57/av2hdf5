@@ -3,7 +3,9 @@ Extract frames from video into HDF5 formatted files.
 
 Usage:
     av2hdf5 (-h | --help)
-    av2hdf5 [options] [--jpeg] [--start=FRAME] [--duration=COUNT] <video> <output>
+    av2hdf5 [options]
+        [--start=FRAME] [--duration=COUNT]
+        [--jpeg | --png | --raw] <video> <output>
 
 General options:
     -h, --help              Show a brief usage summary.
@@ -14,16 +16,18 @@ Video decoding options:
     -t, --duration=COUNT    Decode only COUNT frames from the input.
 
 Encoding options:
-    --jpeg                  Write output as an encoded JPEG-format byte stream
-                            instead of raw data.
+    --jpeg                  Write output as a JPEG-encoded byte stream.
+    --png                   Write output as a PNG-encoded byte stream.
+    --raw                   Write output as raw 8-bit pixel values. (The default.)
 
 The <video> argument specifies a file containing a FFMPEG-compatible video file
 to extract frames from. The <output> argument specifies a HDF5 file to write
 output to. If <output> already exists, it will be overwritten.
 
 """
-import logging
 import enum
+import io
+import logging
 import sys
 
 import av
@@ -33,9 +37,11 @@ import numpy as np
 
 LOG = logging.getLogger()
 
-class Encoding(Enum):
-    raw = 1
-    jpeg = 2
+# pylint: disable=too-few-public-methods
+class Encoding(enum.Enum):
+    raw = 'raw'
+    jpeg = 'jpeg'
+    png = 'png'
 
 def main():
     """Main entry point for tool."""
@@ -58,6 +64,8 @@ def main():
 
     if opts['--jpeg']:
         encoding = Encoding.jpeg
+    elif opts['--png']:
+        encoding = Encoding.png
     else:
         encoding = Encoding.raw
 
@@ -86,16 +94,25 @@ def convert(frames, output, encoding=Encoding.raw):
         if encoding is Encoding.raw:
             # Convert frame to numpy array
             frame_array = np.asarray(frame).astype(np.uint8)
-
-            # Create dataset in output
-            frame_ds = output.create_array(
-                '/', 'frame{0:05d}'.format(frame_idx), frame_array
-            )
+        elif encoding is Encoding.jpeg:
+            fp = io.BytesIO()
+            frame.save(fp, format='jpeg', quality=100)
+            frame_array = np.frombuffer(fp.getvalue(), np.uint8)
+        elif encoding is Encoding.png:
+            fp = io.BytesIO()
+            frame.save(fp, format='png')
+            frame_array = np.frombuffer(fp.getvalue(), np.uint8)
         else:
             assert False
 
+        # Create dataset in output
+        frame_ds = output.create_array(
+            '/', 'frame{0:05d}'.format(frame_idx), frame_array
+        )
+
         # Write metadata on frame
         frame_ds.attrs.original_idx = frame_idx
+        frame_ds.attrs.encoding = encoding.value
 
 def read_video(fn, start_frame=None, duration=None):
     """Takes a path to a video file. Return a generator which will generator a
