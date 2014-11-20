@@ -22,5 +22,10 @@ install:
     # Now install ourselves and the test requirements
     - "pip install -r requirements.txt"
     - "pip install -r tests/requirements.txt"
+
+    # Install coveralls support
+    - "pip install coveralls"
 script:
     - "python setup.py nosetests"
+after_success:
+    - "coveralls"
