@@ -1,10 +1,10 @@
 language: python
 python:
-        - "2.7"
-        - "3.3"
+    - "2.7"
+    - "3.3"
 install:
-        - "sudo apt-get -y install libavcodec-dev libavfilter-dev libavformat-dev"
-        - "pip install -r requirements.txt"
-        - "pip install -r tests/requirements.txt"
+    - "sudo apt-get -y install libavcodec-dev libavfilter-dev libavformat-dev libavdevice-dev libswscale-dev"
+    - "pip install -r requirements.txt"
+    - "pip install -r tests/requirements.txt"
 script:
-        - "python setup.py nosetests"
+    - "python setup.py nosetests"
