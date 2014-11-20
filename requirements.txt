@@ -2,4 +2,8 @@
 numpy
 numexpr
 
+# Now PyTables
+tables
+
+# And, finally, anything else in setup.py
 -e .
